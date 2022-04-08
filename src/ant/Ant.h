@@ -10,12 +10,12 @@ class Ant{
         SDL_Rect toSDLRect();
     };
     Position pos;
-    SDL_Texture* texture;
+    SDL_Texture* texture_;
     float speed_, angle_ = 0; // Start by going left
-    float TURN_ANGLE = 0.05; //Every turn is 0.2 radians
+    float TURN_ANGLE = 0.1; //Every turn is 0.1 radians
 
 public:
-    Ant(SDL_Renderer*, const char*, int=300, int=300, int=50, int=50, float=2);
+    Ant(SDL_Renderer*, SDL_Texture*, float=300, float=300, float=50, float=50, float=2);
     void show(SDL_Renderer*);
     void update(int, int);
     void move(int);

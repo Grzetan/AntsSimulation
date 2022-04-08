@@ -2,10 +2,12 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
 #include <time.h>
+#include <vector>
 #include "Ant.h"
 
 #define W 800
 #define H 600
+#define NEST_SIZE 500
 
 int main(int argc, char *argv[]){
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -19,11 +21,19 @@ int main(int argc, char *argv[]){
     SDL_Renderer* renderer = NULL;
     renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 
-    Ant ant1(renderer, "./utils/ant.png");
-    Ant ant2(renderer, "./utils/ant.png");
-    Ant ant3(renderer, "./utils/ant.png");
-    Ant ant4(renderer, "./utils/ant.png");
-    Ant ant5(renderer, "./utils/ant.png");
+    // Ant texture
+    SDL_Surface* img = NULL;
+    SDL_Texture* texture = NULL;
+    img = IMG_Load("./utils/ant.png");
+    texture = SDL_CreateTextureFromSurface(renderer, img);
+    SDL_FreeSurface(img);
+
+    // Create nest
+    std::vector<Ant> nest;
+    nest.reserve(NEST_SIZE);
+    for(int i=0; i<NEST_SIZE; i++){
+        nest.push_back(Ant(renderer, texture));
+    }
 
     int close = 0;
     srand(time(NULL));
@@ -32,16 +42,10 @@ int main(int argc, char *argv[]){
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
-        ant1.update(W, H);
-        ant1.show(renderer);
-        ant2.update(W, H);
-        ant2.show(renderer);
-        ant3.update(W, H);
-        ant3.show(renderer);
-        ant4.update(W, H);
-        ant4.show(renderer);
-        ant5.update(W, H);
-        ant5.show(renderer);
+        for(int i=0; i<NEST_SIZE; i++){
+            nest[i].update(W, H);
+            nest[i].show(renderer);
+        }
 
         SDL_RenderPresent(renderer);
 

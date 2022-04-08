@@ -1,12 +1,10 @@
 #include "Ant.h"
 
-Ant::Ant(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float speed){
+Ant::Ant(SDL_Renderer* renderer, SDL_Texture* texture, float x, float y, float w, float h, float speed){
     pos = {x,y,w,h};
+    angle_ = (float)rand() / (float)RAND_MAX * 2*M_PI;
     speed_ = speed;
-    SDL_Surface* img = NULL;
-    img = IMG_Load(path);
-    texture = SDL_CreateTextureFromSurface(renderer, img);
-    SDL_FreeSurface(img);
+    texture_ = texture;
 }
 
 SDL_Rect Ant::Position::toSDLRect(){
@@ -63,6 +61,6 @@ void Ant::show(SDL_Renderer* renderer){
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     // SDL_RenderFillRect(renderer, &pos);
     SDL_Rect r = pos.toSDLRect();
-    SDL_RenderCopy(renderer, texture, NULL, &r);
+    SDL_RenderCopy(renderer, texture_, NULL, &r);
     // SDL_RenderDrawLine(renderer, pos.x, pos.y, pos.w, pos.h);
 }
