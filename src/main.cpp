@@ -4,6 +4,7 @@
 #include <time.h>
 #include <vector>
 #include "Ant.h"
+#include "Phermone.h"
 
 #define W 800
 #define H 600
@@ -21,18 +22,11 @@ int main(int argc, char *argv[]){
     SDL_Renderer* renderer = NULL;
     renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 
-    // Ant texture
-    SDL_Surface* img = NULL;
-    SDL_Texture* texture = NULL;
-    img = IMG_Load("./utils/ant.png");
-    texture = SDL_CreateTextureFromSurface(renderer, img);
-    SDL_FreeSurface(img);
-
     // Create nest
     std::vector<Ant> nest;
     nest.reserve(NEST_SIZE);
     for(int i=0; i<NEST_SIZE; i++){
-        nest.push_back(Ant(renderer, texture));
+        nest.push_back(Ant());
     }
 
     int close = 0;

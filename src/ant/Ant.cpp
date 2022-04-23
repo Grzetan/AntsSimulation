@@ -1,10 +1,9 @@
 #include "Ant.h"
 
-Ant::Ant(SDL_Renderer* renderer, SDL_Texture* texture, float x, float y, float w, float h, float speed){
+Ant::Ant(float x, float y, float w, float h, float speed){
     pos = {x,y,w,h};
     angle_ = (float)rand() / (float)RAND_MAX * 2*M_PI;
     speed_ = speed;
-    texture_ = texture;
 }
 
 SDL_Rect Ant::Position::toSDLRect(){
@@ -55,12 +54,26 @@ void Ant::update(int W, int H){
         angle_ = 2*M_PI - angle_;
     }
 
+    // Update phermone age
+    for(int i=0; i<phermoneTrail.size(); i++){
+        phermoneTrail[i].update();
+    }
+
+    // Add new phermone
+    phermoneTrail.push_back(Phermone(pos.x, pos.y, phermoneLifeSpan_));
+
+    // Remove old phermones
+    if(phermoneTrail.size() >= phermoneLifeSpan_){
+        phermoneTrail.erase(phermoneTrail.begin());
+    }
 }
 
 void Ant::show(SDL_Renderer* renderer){
-    // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    // SDL_RenderFillRect(renderer, &pos);
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_Rect r = pos.toSDLRect();
-    SDL_RenderCopy(renderer, texture_, NULL, &r);
-    // SDL_RenderDrawLine(renderer, pos.x, pos.y, pos.w, pos.h);
+    SDL_RenderFillRect(renderer, &r);
+
+    for(Phermone phermone : phermoneTrail){
+        phermone.show(renderer);
+    }
 }
