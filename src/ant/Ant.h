@@ -15,7 +15,7 @@ class Ant{
     Position pos;
     float speed_, angle_;
     float TURN_ANGLE = 0.1; //Every turn is 0.1 radians
-    float sensorDistance = 5, sensorAngle = M_PI / 3, sensorArea = 10;
+    float sensorDistance = 5, sensorAngle = M_PI / 3, sensorArea = 4;
 
 public:
     Ant(float=300, float=300, float=3, float=3, float=2);

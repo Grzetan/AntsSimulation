@@ -24,17 +24,15 @@ void Ant::update(int W, int H, int* phermones){
     int dir = 0, max=0;
     int phermoneCount[] = {0,0,0}; // Phermone amount in each spot
     float angles[] = {-1, 0, 1}; // Sensors angles
-    float x, y, x1, x2, y1, y2, px, py;
+    float x, y;
     for(int i=0; i<3; i++){
         x = pos.x + sensorDistance * cos(angle_ + sensorAngle * angles[i]);
         y = pos.y + sensorDistance * sin(angle_ + sensorAngle * angles[i]);
-        x1 = x - sensorArea/2;
-        x2 = x + sensorArea/2;
-        y1 = y - sensorArea/2;
-        y2 = y + sensorArea/2;
-        for(int j=0; j<sensorArea*sensorArea; j++){
-            if(x1 == j){
-                continue;
+        for(int y_=y-sensorArea/2; y_ < y+sensorArea/2; y_++){
+            for(int x_=x-sensorArea/2; x_ < x+sensorArea/2; x_++){
+                if(phermones[y_*H+x_] > 0){
+                    phermoneCount[i] += phermones[y_*H+x_];
+                }
             }
         }
         if(phermoneCount[i] > max){
@@ -43,19 +41,22 @@ void Ant::update(int W, int H, int* phermones){
         }
     }
 
+    if(max != 0){
+        angle_ += TURN_ANGLE*dir;
+    }else{
+        float theta = (float)rand() / (float)RAND_MAX;
 
-    float theta = (float)rand() / (float)RAND_MAX;
+        // Randomly turn left or right or keep moving forward
+        if(theta < 0.3333){
+            angle_ += TURN_ANGLE;
+        }else if(theta >= 0.3333 && theta < 0.6666){
+            angle_ -= TURN_ANGLE;
+        }
 
-    // Randomly turn left or right or keep moving forward
-    if(theta < 0.3333){
-        angle_ += TURN_ANGLE;
-    }else if(theta >= 0.3333 && theta < 0.6666){
-        angle_ -= TURN_ANGLE;
-    }
-
-    // Keep the angle between 0 and 2PI radians
-    if(angle_ >= 2*M_PI || angle_ < 0){
-        angle_ = 0;
+        // Keep the angle between 0 and 2PI radians
+        if(angle_ >= 2*M_PI || angle_ < 0){
+            angle_ = 0;
+        }
     }
 
     // Update position coordinates

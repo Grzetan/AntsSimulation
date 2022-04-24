@@ -6,9 +6,10 @@
 #include <algorithm>
 #include "Ant.h"
 
-#define W 500
-#define H 500
-#define NEST_SIZE 500
+#define W 800
+#define H 800
+#define COLONY_POPULATION 1000
+#define NEST_SIZE 30
 #define PHERMONE_LIFE_SPAN 50
 
 int main(int argc, char *argv[]){
@@ -25,15 +26,24 @@ int main(int argc, char *argv[]){
 
     // Create nest
     std::vector<Ant> nest;
-    nest.reserve(NEST_SIZE);
-    for(int i=0; i<NEST_SIZE; i++){
-        nest.push_back(Ant());
+    nest.reserve(COLONY_POPULATION);
+    for(int i=0; i<COLONY_POPULATION; i++){
+        nest.push_back(Ant(W/2, H/2));
     }
 
     // World map
     int* world = new int[H*W];
     // 0 = nothing there
-    // >0 phermone and it's age
+    // >0 = phermone and it's age
+    // -1 = food
+    // -2 = nest
+
+    // Create nest
+    for(int y=H/2-NEST_SIZE/2; y<H/2+NEST_SIZE/2; y++){
+        for(int x=W/2-NEST_SIZE/2; x<W/2+NEST_SIZE/2; x++){
+            world[y*H+x] = -2;
+        }
+    }
 
     int close = 0;
     srand(time(NULL));
@@ -42,7 +52,8 @@ int main(int argc, char *argv[]){
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
-        for(int i=0; i<NEST_SIZE; i++){
+        // Update and draw ants
+        for(int i=0; i<COLONY_POPULATION; i++){
             nest[i].update(W, H, world);
             nest[i].show(renderer);
 
@@ -51,21 +62,33 @@ int main(int argc, char *argv[]){
             }
         }
 
+        // Update and draw phermone
         SDL_Rect pos;
         for(int y=0; y<H; y++){
             for(int x=0; x<W; x++){
-                if(world[y*H+x] > 0){
-                    world[y*H+x]--;
-                    int saturation = 255 - (int) ((float)world[y*H+x]/PHERMONE_LIFE_SPAN*255);
+                int& tmp = world[y*H+x];
+                if(tmp == 0){
+                    continue;
+                }else if(tmp > 0){
+                    tmp--;
+                    int saturation = 255 - (int) ((float)tmp/PHERMONE_LIFE_SPAN*255);
                     pos.x = x;
                     pos.y = y;
                     pos.w = 1;
                     pos.h = 1;
-                    SDL_SetRenderDrawColor(renderer, saturation, saturation, 255, 255);
                     SDL_RenderFillRect(renderer, &pos);
+                    SDL_SetRenderDrawColor(renderer, saturation, saturation, 255, 255);
                 }
             }
         }
+
+        // Draw nest
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        pos.x = W/2 - NEST_SIZE/2;
+        pos.y = H/2 - NEST_SIZE/2;
+        pos.w = NEST_SIZE;
+        pos.h = NEST_SIZE;
+        SDL_RenderFillRect(renderer, &pos);
 
         SDL_RenderPresent(renderer);
 
