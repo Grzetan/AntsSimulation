@@ -3,12 +3,13 @@
 #include <SDL2/SDL_timer.h>
 #include <time.h>
 #include <vector>
+#include <algorithm>
 #include "Ant.h"
-#include "Phermone.h"
 
-#define W 800
-#define H 600
+#define W 500
+#define H 500
 #define NEST_SIZE 500
+#define PHERMONE_LIFE_SPAN 50
 
 int main(int argc, char *argv[]){
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -29,6 +30,11 @@ int main(int argc, char *argv[]){
         nest.push_back(Ant());
     }
 
+    // World map
+    int* world = new int[H*W];
+    // 0 = nothing there
+    // >0 phermone and it's age
+
     int close = 0;
     srand(time(NULL));
 
@@ -37,8 +43,28 @@ int main(int argc, char *argv[]){
         SDL_RenderClear(renderer);
 
         for(int i=0; i<NEST_SIZE; i++){
-            nest[i].update(W, H);
+            nest[i].update(W, H, world);
             nest[i].show(renderer);
+
+            if(nest[i].hasFood()){
+                world[nest[i].getY()*H+nest[i].getX()] = PHERMONE_LIFE_SPAN;
+            }
+        }
+
+        SDL_Rect pos;
+        for(int y=0; y<H; y++){
+            for(int x=0; x<W; x++){
+                if(world[y*H+x] > 0){
+                    world[y*H+x]--;
+                    int saturation = 255 - (int) ((float)world[y*H+x]/PHERMONE_LIFE_SPAN*255);
+                    pos.x = x;
+                    pos.y = y;
+                    pos.w = 1;
+                    pos.h = 1;
+                    SDL_SetRenderDrawColor(renderer, saturation, saturation, 255, 255);
+                    SDL_RenderFillRect(renderer, &pos);
+                }
+            }
         }
 
         SDL_RenderPresent(renderer);

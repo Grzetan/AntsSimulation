@@ -1,1 +1,1 @@
-g++ src/main.cpp src/ant/Ant.cpp src/phermone/Phermone.cpp -lSDL2 -lSDL2_image -I src/ant -I src/phermone
+g++ src/main.cpp src/ant/Ant.cpp -lSDL2 -lSDL2_image -I src/ant

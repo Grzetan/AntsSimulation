@@ -4,7 +4,6 @@
 #include <SDL2/SDL_image.h>
 #include <vector>
 #include <math.h>
-#include "Phermone.h"
 
 using std::vector;
 
@@ -14,14 +13,16 @@ class Ant{
         SDL_Rect toSDLRect();
     };
     Position pos;
-    vector<Phermone> phermoneTrail;
-    int phermoneLifeSpan_ = 50;
-    float speed_, angle_ = 0; // Start by going left
+    float speed_, angle_;
     float TURN_ANGLE = 0.1; //Every turn is 0.1 radians
+    float sensorDistance = 5, sensorAngle = M_PI / 3, sensorArea = 10;
 
 public:
-    Ant(float=300, float=300, float=2, float=2, float=2);
+    Ant(float=300, float=300, float=3, float=3, float=2);
     void show(SDL_Renderer*);
-    void update(int, int);
+    void update(int, int, int*);
     void move(int);
+    bool hasFood();
+    int getX();
+    int getY();
 };

@@ -19,7 +19,31 @@ void Ant::move(int dir){
     angle_ += dir * TURN_ANGLE;
 }
 
-void Ant::update(int W, int H){
+void Ant::update(int W, int H, int* phermones){
+    // Look for phermone
+    int dir = 0, max=0;
+    int phermoneCount[] = {0,0,0}; // Phermone amount in each spot
+    float angles[] = {-1, 0, 1}; // Sensors angles
+    float x, y, x1, x2, y1, y2, px, py;
+    for(int i=0; i<3; i++){
+        x = pos.x + sensorDistance * cos(angle_ + sensorAngle * angles[i]);
+        y = pos.y + sensorDistance * sin(angle_ + sensorAngle * angles[i]);
+        x1 = x - sensorArea/2;
+        x2 = x + sensorArea/2;
+        y1 = y - sensorArea/2;
+        y2 = y + sensorArea/2;
+        for(int j=0; j<sensorArea*sensorArea; j++){
+            if(x1 == j){
+                continue;
+            }
+        }
+        if(phermoneCount[i] > max){
+            max = phermoneCount[i];
+            dir = angles[i];
+        }
+    }
+
+
     float theta = (float)rand() / (float)RAND_MAX;
 
     // Randomly turn left or right or keep moving forward
@@ -53,27 +77,22 @@ void Ant::update(int W, int H){
         pos.y = H - pos.h;
         angle_ = 2*M_PI - angle_;
     }
-
-    // Update phermone age
-    for(int i=0; i<phermoneTrail.size(); i++){
-        phermoneTrail[i].update();
-    }
-
-    // Add new phermone
-    phermoneTrail.push_back(Phermone(pos.x, pos.y, phermoneLifeSpan_));
-
-    // Remove old phermones
-    if(phermoneTrail.size() >= phermoneLifeSpan_){
-        phermoneTrail.erase(phermoneTrail.begin());
-    }
 }
 
 void Ant::show(SDL_Renderer* renderer){
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_Rect r = pos.toSDLRect();
     SDL_RenderFillRect(renderer, &r);
+}
 
-    for(Phermone phermone : phermoneTrail){
-        phermone.show(renderer);
-    }
+bool Ant::hasFood(){
+    return true; // TODO
+}
+
+int Ant::getX(){
+    return (int) pos.x;
+}
+
+int Ant::getY(){
+    return (int) pos.y;
 }
