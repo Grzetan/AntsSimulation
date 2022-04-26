@@ -6,32 +6,23 @@ Ant::Ant(float x, float y, float w, float h, float speed){
     speed_ = speed;
 }
 
-SDL_Rect Ant::Position::toSDLRect(){
-    SDL_Rect pos;
-    pos.x = (int) x;
-    pos.y = (int) y;
-    pos.w = (int) w;
-    pos.h = (int) h;
-    return pos;
-}
-
-void Ant::move(int dir){
-    angle_ += dir * TURN_ANGLE;
-}
-
-void Ant::update(int W, int H, int* phermones){
+void Ant::update(int W, int H, int* world){
     // Look for phermone
     int dir = 0, max=0;
     int phermoneCount[] = {0,0,0}; // Phermone amount in each spot
     float angles[] = {-1, 0, 1}; // Sensors angles
-    float x, y;
+    float x, y, Xmin, Xmax, Ymin, Ymax;
     for(int i=0; i<3; i++){
         x = pos.x + sensorDistance * cos(angle_ + sensorAngle * angles[i]);
         y = pos.y + sensorDistance * sin(angle_ + sensorAngle * angles[i]);
-        for(int y_=y-sensorArea/2; y_ < y+sensorArea/2; y_++){
-            for(int x_=x-sensorArea/2; x_ < x+sensorArea/2; x_++){
-                if(phermones[y_*H+x_] > 0){
-                    phermoneCount[i] += phermones[y_*H+x_];
+        Ymin = std::max(std::min((int) (y-sensorArea/2), H-1), 0);
+        Ymax = std::max(std::min((int) (y+sensorArea/2), H-1), 0);
+        Xmin = std::max(std::min((int) (x-sensorArea/2), W-1), 0);
+        Xmax = std::max(std::min((int) (x+sensorArea/2), W-1), 0);
+        for(int y_=Ymin; y_ < Ymax; y_++){
+            for(int x_=Xmin; x_ < Xmax; x_++){
+                if(world[y_*H+x_] > 0){
+                    phermoneCount[i] += world[y_*H+x_];
                 }
             }
         }
@@ -78,12 +69,6 @@ void Ant::update(int W, int H, int* phermones){
         pos.y = H - pos.h;
         angle_ = 2*M_PI - angle_;
     }
-}
-
-void Ant::show(SDL_Renderer* renderer){
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_Rect r = pos.toSDLRect();
-    SDL_RenderFillRect(renderer, &r);
 }
 
 bool Ant::hasFood(){
