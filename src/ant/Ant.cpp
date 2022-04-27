@@ -1,6 +1,6 @@
 #include "Ant.h"
 
-Ant::Ant(float x, float y, float w, float h, float speed){
+Ant::Ant(float x, float y, int w, int h, float speed){
     pos = {x,y,w,h};
     angle_ = (float)rand() / (float)RAND_MAX * 2*M_PI;
     speed_ = speed;
@@ -8,8 +8,8 @@ Ant::Ant(float x, float y, float w, float h, float speed){
 
 void Ant::update(int W, int H, int* world){
     // Look for phermone
-    int dir = 0, max=0;
-    int phermoneCount[] = {0,0,0}; // Phermone amount in each spot
+    int dir=0, max=0, tmp, following=World::FOOD_PHERMONE;
+    int sensorCount[] = {0, 0, 0}; // Phermone amount in each spot
     float angles[] = {-1, 0, 1}; // Sensors angles
     float x, y, Xmin, Xmax, Ymin, Ymax;
     for(int i=0; i<3; i++){
@@ -21,13 +21,30 @@ void Ant::update(int W, int H, int* world){
         Xmax = std::max(std::min((int) (x+sensorArea/2), W-1), 0);
         for(int y_=Ymin; y_ < Ymax; y_++){
             for(int x_=Xmin; x_ < Xmax; x_++){
-                if(world[y_*H+x_] > 0){
-                    phermoneCount[i] += world[y_*H+x_];
+                tmp = world[y_*H+x_];
+                if(!hasFood_ && tmp == World::FOOD){
+                    if(following != World::FOOD){
+                        following = World::FOOD;
+                        sensorCount[0] = 0;
+                        sensorCount[1] = 0;
+                        sensorCount[2] = 0;
+                    }
+                    sensorCount[i] += 1;
+                }else if(hasFood_ && tmp == World::NEST){
+                    if(following != World::NEST){
+                        following = World::NEST;
+                        sensorCount[0] = 0;
+                        sensorCount[1] = 0;
+                        sensorCount[2] = 0;
+                    }
+                    sensorCount[i] += 1;
+                }else if(tmp > 0 && !hasFood_){
+                    sensorCount[i] += tmp;
                 }
             }
         }
-        if(phermoneCount[i] > max){
-            max = phermoneCount[i];
+        if(sensorCount[i] > max){
+            max = sensorCount[i];
             dir = angles[i];
         }
     }
@@ -42,11 +59,6 @@ void Ant::update(int W, int H, int* world){
             angle_ += TURN_ANGLE;
         }else if(theta >= 0.3333 && theta < 0.6666){
             angle_ -= TURN_ANGLE;
-        }
-
-        // Keep the angle between 0 and 2PI radians
-        if(angle_ >= 2*M_PI || angle_ < 0){
-            angle_ = 0;
         }
     }
 
@@ -69,16 +81,35 @@ void Ant::update(int W, int H, int* world){
         pos.y = H - pos.h;
         angle_ = 2*M_PI - angle_;
     }
+
+    // Pick up food
+    int idx = (int) pos.y*H + (int) pos.x;
+    if(world[idx] == -1 && !hasFood_){
+        world[idx] = 0;
+        hasFood_ = true;
+        angle_ += M_PI;
+    }
+
+    // Leave food in nest
+    if(world[idx] == -2 && hasFood_){
+        hasFood_ = false;
+        angle_ += M_PI;
+    }
+
+    // Keep the angle between 0 and 2PI radians
+    if(angle_ >= 2*M_PI || angle_ < 0){
+        angle_ = 0;
+    }
 }
 
 bool Ant::hasFood(){
-    return true; // TODO
+    return hasFood_;
 }
 
 int Ant::getX(){
-    return (int) pos.x;
+    return pos.x;
 }
 
 int Ant::getY(){
-    return (int) pos.y;
+    return pos.y;
 }
