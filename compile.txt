@@ -1,1 +1,1 @@
-g++ src/main.cpp src/ant/Ant.cpp -lSDL2 -lSDL2_image -I src/ant
+g++ src/main.cpp src/ant/Ant.cpp -lSDL2 -I src/ant -I src/

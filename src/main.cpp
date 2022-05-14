@@ -10,7 +10,7 @@
 #define H 500
 #define COLONY_POPULATION 500
 #define NEST_SIZE 30
-#define PHERMONE_LIFE_SPAN 150
+#define PHERMONE_LIFE_SPAN 50
 
 void setPixel(SDL_Surface* surface, int x, int y, uint8_t r, uint8_t g, uint8_t b){
     SDL_LockSurface(surface);
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
     }
 
     // World map
-    int* world = new int[H*W];
+    WorldPoint* world = new WorldPoint[H*W];
     // 0 = nothing there
     // (0, PHERMONE_LIFE_SPAN> = home phermone and it's age
     // (PHERMONE_AGE, 2*PHERMONE_LIFE_SPAN> = food phermone and it's age
@@ -52,14 +52,14 @@ int main(int argc, char *argv[]){
     // Create nest
     for(int y=H/2-NEST_SIZE/2; y<H/2+NEST_SIZE/2; y++){
         for(int x=W/2-NEST_SIZE/2; x<W/2+NEST_SIZE/2; x++){
-            world[y*H+x] = World::NEST;
+            world[y*H+x].type = Types::NEST;
         }
     }
 
     // Create food
-    for(int y=0; y<500; y++){
-        for(int x=100; x<150; x++){
-            world[y*H+x] = World::FOOD;
+    for(int y=0; y<100; y++){
+        for(int x=0; x<100; x++){
+            world[y*H+x].type = Types::FOOD;
         }
     }
 
@@ -70,16 +70,17 @@ int main(int argc, char *argv[]){
         // Update and draw phermone
         for(int y=0; y<H; y++){
             for(int x=0; x<W; x++){
-                int& tmp = world[y*H+x];
-                if(tmp == 0){ // Empty space
+                Types type = world[y*H+x].type;
+                int& lifeSpan = world[y*H+x].lifeSpan;
+                if(type == Types::EMPTY){ // Empty space
                     setPixel(background, x, y, 255, 255, 255);
-                }else if(tmp > 0){ // Phermones
-                    tmp--;
-                    int saturation = 255 - (int) ((float)tmp/PHERMONE_LIFE_SPAN*255);
+                }else if(type == Types::FOOD_PHERMONE){ // Phermones
+                    lifeSpan--;
+                    int saturation = 255 - (int) ((float)lifeSpan/PHERMONE_LIFE_SPAN*255);
                     setPixel(background, x, y, saturation, 255, saturation);
-                }else if(tmp == -1){ // Food
+                }else if(type == Types::FOOD){ // Food
                     setPixel(background, x, y, 0, 0, 255);
-                }else if(tmp == -2){ // Nest
+                }else if(type == Types::NEST){ // Nest
                     setPixel(background, x, y, 0, 0, 0);
                 }
             }
@@ -97,8 +98,9 @@ int main(int argc, char *argv[]){
 
             if(nest[i].hasFood()){
                 int idx = nest[i].getY()*H+nest[i].getX();
-                if(world[idx] >= 0){
-                    world[idx] = PHERMONE_LIFE_SPAN;
+                if(world[idx].type == Types::EMPTY || world[idx].type == Types::FOOD_PHERMONE){
+                    world[idx].type = Types::FOOD_PHERMONE;
+                    world[idx].lifeSpan = PHERMONE_LIFE_SPAN;
                 }
             }
         }
