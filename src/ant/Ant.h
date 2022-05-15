@@ -12,7 +12,7 @@ class Ant{
     Position pos;
     float speed_, angle_;
     float TURN_ANGLE = 0.1; //Every turn is 0.1 radians
-    float sensorDistance = 15, sensorAngle = M_PI / 3, sensorArea = 4;
+    float sensorDistance = 9, sensorAngle = M_PI / 3, sensorArea = 5;
     bool hasFood_ = false;
     int findDirection(int, int, WorldPoint*);
 

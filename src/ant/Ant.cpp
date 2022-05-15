@@ -28,12 +28,15 @@ int Ant::findDirection(int W, int H, WorldPoint* world){
                     return angles[i];
                 }else if(hasFood_ && type == Types::NEST){
                     return angles[i];
-                }else if(type == Types::FOOD_PHERMONE && !hasFood_){
+                }else if((type == Types::FOOD_PHERMONE && !hasFood_)){
                     sensorCount[i] += world[y_*H+x_].lifeSpan;
                 }
             }
         }
         if(sensorCount[i] > max){
+            if(hasFood_){
+                std::cout << dir << std::endl;
+            }
             max = sensorCount[i];
             dir = angles[i];
         }
@@ -49,7 +52,7 @@ void Ant::update(int W, int H, WorldPoint* world){
     // Get best direction
     int dir = findDirection(W, H, world);
     if(dir != -2){
-        angle_ += TURN_ANGLE*dir;
+        angle_ += sensorAngle*dir;
     }else{
         float theta = (float)rand() / (float)RAND_MAX;
 

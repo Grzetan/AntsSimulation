@@ -8,9 +8,9 @@
 
 #define W 500
 #define H 500
-#define COLONY_POPULATION 500
+#define COLONY_POPULATION 100
 #define NEST_SIZE 30
-#define PHERMONE_LIFE_SPAN 50
+#define PHERMONE_LIFE_SPAN 300
 
 void setPixel(SDL_Surface* surface, int x, int y, uint8_t r, uint8_t g, uint8_t b){
     SDL_LockSurface(surface);
@@ -43,11 +43,6 @@ int main(int argc, char *argv[]){
 
     // World map
     WorldPoint* world = new WorldPoint[H*W];
-    // 0 = nothing there
-    // (0, PHERMONE_LIFE_SPAN> = home phermone and it's age
-    // (PHERMONE_AGE, 2*PHERMONE_LIFE_SPAN> = food phermone and it's age
-    // -1 = food
-    // -2 = nest
 
     // Create nest
     for(int y=H/2-NEST_SIZE/2; y<H/2+NEST_SIZE/2; y++){
@@ -57,27 +52,38 @@ int main(int argc, char *argv[]){
     }
 
     // Create food
-    for(int y=0; y<100; y++){
-        for(int x=0; x<100; x++){
-            world[y*H+x].type = Types::FOOD;
-        }
-    }
+    // for(int y=0; y<50; y++){
+    //     for(int x=0; x<50; x++){
+    //         world[y*H+x].type = Types::FOOD;
+    //     }
+    // }
 
     int close = 0;
+    int x,y; // For mouse coordinates
     srand(time(NULL));
 
     while (!close) {
         // Update and draw phermone
         for(int y=0; y<H; y++){
             for(int x=0; x<W; x++){
-                Types type = world[y*H+x].type;
+                Types& type = world[y*H+x].type;
                 int& lifeSpan = world[y*H+x].lifeSpan;
                 if(type == Types::EMPTY){ // Empty space
                     setPixel(background, x, y, 255, 255, 255);
                 }else if(type == Types::FOOD_PHERMONE){ // Phermones
+                    int saturation = 255 - (int) ((float)lifeSpan/PHERMONE_LIFE_SPAN*255);
+                    setPixel(background, x, y, 128, 128, saturation);
                     lifeSpan--;
+                    if(lifeSpan == 0){
+                        type = Types::EMPTY;
+                    }
+                }else if(type == Types::HOME_PHERMONE){ // Phermones
                     int saturation = 255 - (int) ((float)lifeSpan/PHERMONE_LIFE_SPAN*255);
                     setPixel(background, x, y, saturation, 255, saturation);
+                    lifeSpan--;
+                    if(lifeSpan == 0){
+                        type = Types::EMPTY;
+                    }
                 }else if(type == Types::FOOD){ // Food
                     setPixel(background, x, y, 0, 0, 255);
                 }else if(type == Types::NEST){ // Nest
@@ -96,12 +102,15 @@ int main(int argc, char *argv[]){
                 }
             }
 
-            if(nest[i].hasFood()){
-                int idx = nest[i].getY()*H+nest[i].getX();
-                if(world[idx].type == Types::EMPTY || world[idx].type == Types::FOOD_PHERMONE){
+            int idx = nest[i].getY()*H+nest[i].getX();
+            if(world[idx].type == Types::EMPTY || world[idx].type == Types::FOOD_PHERMONE){
+                if(nest[i].hasFood()){
                     world[idx].type = Types::FOOD_PHERMONE;
-                    world[idx].lifeSpan = PHERMONE_LIFE_SPAN;
                 }
+                // else{
+                //     world[idx].type = Types::HOME_PHERMONE;
+                // }
+                world[idx].lifeSpan = PHERMONE_LIFE_SPAN;
             }
         }
 
@@ -114,6 +123,18 @@ int main(int argc, char *argv[]){
                 case SDL_QUIT:
                     close = 1;
                     break;
+            }
+            SDL_GetMouseState(&x,&y);
+            if(event.button.button == SDL_BUTTON_LEFT){
+                for(int i=x-5; i<x+5; i++){
+                    for(int j=y-5; j<y+5; j++){
+                        world[j*H+i].type = Types::FOOD_PHERMONE;
+                        world[j*H+i].lifeSpan = PHERMONE_LIFE_SPAN;
+                    }
+                }
+            }
+            if(event.button.button == SDL_BUTTON_RIGHT){
+                // SetPixel(screen, x, y, 0, 0, 255);
             }
         }
         SDL_Delay(1000 / 60);
