@@ -8,8 +8,8 @@
 #define W 500
 #define H 500
 #define SPEED 2
-#define NEST_SIZE 30
-#define PHERMONE_LIFE_SPAN 300
+#define NEST_SIZE 100
+#define EVAPORATE_VALUE 2
 
 void setPixel(SDL_Surface* surface, int x, int y, uint8_t r, uint8_t g, uint8_t b){
     SDL_LockSurface(surface);
@@ -18,6 +18,29 @@ void setPixel(SDL_Surface* surface, int x, int y, uint8_t r, uint8_t g, uint8_t 
     pixelArray[y*surface->pitch +x*surface->format->BytesPerPixel+1] = b;
     pixelArray[y*surface->pitch +x*surface->format->BytesPerPixel+2] = r;
     SDL_UnlockSurface(surface);
+}
+
+SDL_Color getPixelColor(const SDL_Surface* pSurface, const int X, const int Y)
+{
+  // Bytes per pixel
+  const Uint8 Bpp = pSurface->format->BytesPerPixel;
+
+  /*
+  Retrieve the address to a specific pixel
+  pSurface->pixels  = an array containing the SDL_Surface' pixels
+  pSurface->pitch       = the length of a row of pixels (in bytes)
+  X and Y               = the offset on where on the image to retrieve the pixel; (0, 0) is the upper left corner
+  */
+  Uint8* pPixel = (Uint8*)pSurface->pixels + Y * pSurface->pitch + X * Bpp;
+
+  Uint32 PixelData = *(Uint32*)pPixel;
+
+  SDL_Color Color = {0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE};
+
+  // Retrieve the RGB values of the specific pixel
+  SDL_GetRGB(PixelData, pSurface->format, &Color.r, &Color.g, &Color.b);
+
+  return Color;
 }
 
 int main(int argc, char *argv[]){
@@ -51,26 +74,38 @@ int main(int argc, char *argv[]){
 
     while (!close) {
         for(Agent& a : agents){
-            a.x += std::sin(a.angle) * SPEED;
-            a.y += std::cos(a.angle) * SPEED;
+            a.x += std::cos(a.angle) * SPEED;
+            a.y += std::sin(a.angle) * SPEED;
 
-            if(a.x < 0 || a.x > W || a.y < 0 || a.y > H){
-                if(a.x < 0){
-                    a.x=0;
-                }
-                if(a.x > W){
-                    a.x = W;
-                }
-                if(a.y < 0){
-                    a.y = 0;
-                }
-                if(a.y > H){
-                    a.y = H;
-                }
-                a.angle = (float)((float)rand() / (float)RAND_MAX * 2*M_PI);
+            if(a.x < 0){
+                a.x = 0;
+                a.angle = M_PI - a.angle;
+            }
+            if(a.x > W){
+                a.x = W - 1;
+                a.angle = M_PI - a.angle;
+            }
+            if(a.y < 0){
+                a.y = 0;
+                a.angle = 2*M_PI - a.angle;
+            }
+            if(a.y > H){
+                a.y = H - 1;
+                a.angle = 2*M_PI - a.angle;
             }
 
             setPixel(background, a.x, a.y, 255,255,255);
+        }
+
+        // Evaporate trails
+        for(int x=0; x<W; x++){
+            for(int y=0; y<H; y++){
+                SDL_Color currColor = getPixelColor(background, x, y);
+
+                setPixel(background, x, y, std::max(currColor.r - EVAPORATE_VALUE, 0), 
+                                           std::max(currColor.g - EVAPORATE_VALUE, 0), 
+                                           std::max(currColor.b - EVAPORATE_VALUE, 0));
+            }
         }
 
         SDL_UpdateWindowSurface(win);

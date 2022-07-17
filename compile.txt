@@ -1,1 +1,5 @@
+Ant: 
 g++ src/main.cpp src/ant/Ant.cpp -lSDL2 -I src/ant -I src/
+
+Slime:
+g++ src/slime.cpp -lSDL2

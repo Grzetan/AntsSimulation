@@ -51,6 +51,7 @@ int Ant::findDirection(int W, int H, WorldPoint* world){
 void Ant::update(int W, int H, WorldPoint* world){
     // Get best direction
     int dir = findDirection(W, H, world);
+    dir = 0;
     if(dir != -2){
         angle_ += sensorAngle*dir;
     }else{
